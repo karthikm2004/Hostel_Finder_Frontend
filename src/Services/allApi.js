@@ -17,6 +17,29 @@ export const signInApi = async (data) => {
 
 }
 
+// update user profile
+export const updateUserProfileApi = async (reqBody) => {
+
+  const token = sessionStorage.getItem("token")
+
+  const reqHeader = {
+
+    "Authorization": `Bearer ${token}`,
+    "Content-Type": "application/json"
+
+  }
+
+  return await commonApi(
+
+    `${baseUrl}/update-user`,
+    "PUT",
+    reqBody,
+    reqHeader
+
+  )
+
+}
+
 // get all user list
 export const getAllUsersApi = async () => {
   const header = {
@@ -64,6 +87,7 @@ export const getAllHostelsApi = async (search = "") => {
 }
 
 
+// get recent 5 hostel to show in home page
 export const getRecentHostelsApi = async () => {
 
   return await commonApi(`${baseUrl}/recent-hostels`, "GET")

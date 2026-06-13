@@ -1,3 +1,3 @@
-const baseUrl="http://localhost:3000"
+const baseUrl="https://hostel-finder-backend-v957.onrender.com"
 
 export default baseUrl

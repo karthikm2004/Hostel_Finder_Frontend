@@ -1,6 +1,9 @@
-import React, { useState,useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { FaUser, FaHeart, FaCalendarCheck, FaCog, FaSignOutAlt, FaBars, FaTimes } from "react-icons/fa";
 import { Link } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import { updateUserProfileApi } from '../../Services/allApi';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import Favorites from './Favorites';
@@ -9,9 +12,39 @@ import UserBooking from './UserBooking';
 function UserProfile() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [activeTab, setActiveTab] = useState("profile");
-    
-    useEffect(()=>{
-        if(sessionStorage.getItem("token")){
+    const navigate = useNavigate()
+    const [profileData, setProfileData] = useState({
+
+        firstName: "",
+        lastName: "",
+        email: "",
+        phone: "",
+        location: ""
+
+    })
+
+    useEffect(() => {
+
+        const user = JSON.parse(sessionStorage.getItem("existingUser"))
+
+        if (user) {
+
+            setProfileData({
+
+                firstName: user.firstName || "",
+                lastName: user.lastName || "",
+                email: user.email || "",
+                phone: user.phone || "",
+                location: user.location || ""
+
+            })
+
+        }
+
+    }, [])
+
+    useEffect(() => {
+        if (sessionStorage.getItem("token")) {
 
         }
     })
@@ -23,13 +56,63 @@ function UserProfile() {
         { id: 'settings', icon: <FaCog />, label: 'Settings' },
     ];
 
+
+    const handleChange = (e) => {
+
+        const { name, value } = e.target
+
+        setProfileData({
+
+            ...profileData,
+            [name]: value
+
+        })
+
+    }
+
+    const handleUpdate = async () => {
+
+        try {
+
+            // const {"!firstName||!lastName||!email||!phone||!location"}=req.body
+
+            const response = await updateUserProfileApi(profileData)
+
+            if (response.status === 200) {
+
+                sessionStorage.setItem(
+                    "existingUser",
+                    JSON.stringify(response.data)
+                )
+
+                toast.success("Profile Updated")
+
+            }
+
+        }
+
+        catch (err) {
+
+            console.log(err)
+
+            toast.error("Update Failed")
+
+        }
+
+    }
+
+    const handleLogout = async () => {
+        sessionStorage.clear()
+        navigate('/signin')
+    }
+
     return (
         <div className="min-h-screen bg-slate-50 flex flex-col">
             <Header />
 
             {/* Mobile Sidebar Toggle */}
             <div className="lg:hidden bg-white p-4 border-b border-slate-200 flex items-center gap-3">
-                <button 
+                <button
                     onClick={() => setSidebarOpen(true)}
                     className="p-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition-colors"
                 >
@@ -38,42 +121,71 @@ function UserProfile() {
                 <h1 className="font-bold text-slate-800">My Account</h1>
             </div>
 
-            <main className="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 flex flex-col lg:flex-row gap-8">
-                
-                {/* Sidebar */}
-                <aside className={`fixed  inset-y-0 left-0 z-50 w-72 bg-slate-800 shadow-2xl transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 lg:w-64 lg:shadow-none lg:bg-transparent flex flex-col ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
-                    
-                    {/* Mobile Close Btn */}
-                    <div className="p-4 flex justify-end lg:hidden">
-                        <button onClick={() => setSidebarOpen(false)} className="p-2 text-slate-400 hover:text-slate-600">
-                            <FaTimes className="w-5 h-5" />
-                        </button>
-                    </div>
+            <main className="sticky flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 flex flex-col lg:flex-row gap-8 items-start">
 
-                    <div className="lg:bg-white lg:rounded-2xl lg:shadow-sm lg:border lg:border-slate-100 overflow-hidden flex-grow lg:flex-grow-0">
-                        {/* User Summary Box */}
-                        <div className="p-6 text-center border-b border-slate-100">
-                            <img src="https://i.pravatar.cc/150?img=11" alt="Profile" className="w-24 h-24 rounded-full mx-auto mb-3 border-4 border-indigo-50" />
-                            <h2 className="font-bold text-lg text-slate-800">{sessionStorage.getItem("uname")}</h2>
-                            <p className="text-sm text-slate-500">Student</p>
-                        </div>
-                        
-                        <nav className="p-4 flex flex-col gap-1">
-                            {menuItems.map((item) => (
-                                <button
-                                    key={item.id}
-                                    onClick={() => { setActiveTab(item.id); setSidebarOpen(false); }}
-                                    className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors text-left ${activeTab === item.id ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200' : 'text-slate-600 hover:bg-slate-50'}`}
-                                >
-                                    {item.icon} {item.label}
-                                </button>
-                            ))}
-                            <button className="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-rose-600 hover:bg-rose-50 transition-colors text-left mt-4">
-                                <FaSignOutAlt /> Log Out
+                {/* Sidebar */}
+                <aside
+                    className={`fixed inset-y-0 left-0 z-50 w-72 bg-slate-800 shadow-2xl transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:w-64 lg:bg-transparent lg:shadow-none lg:static ${sidebarOpen ? "translate-x-0" : "-translate-x-full"
+                        }`}
+                >
+
+                    {/* Desktop Sticky Container */}
+                    <div className="lg:sticky lg:top-24 lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto">
+
+                        {/* Mobile Close Btn */}
+                        <div className="p-4 flex justify-end lg:hidden">
+                            <button
+                                onClick={() => setSidebarOpen(false)}
+                                className="p-2 text-slate-400 hover:text-slate-600"
+                            >
+                                <FaTimes className="w-5 h-5" />
                             </button>
-                        </nav>
+                        </div>
+
+                        <div className="lg:sticky lg:top-24 lg:bg-white lg:rounded-2xl lg:shadow-sm lg:border lg:border-slate-100 overflow-hidden flex-grow lg:flex-grow-0">
+
+                            {/* User Summary Box */}
+                            <div className="p-6 text-center border-b border-slate-100">
+                                <img
+                                    src="https://i.pravatar.cc/150?img=11"
+                                    alt="Profile"
+                                    className="w-24 h-24 rounded-full mx-auto mb-3 border-4 border-indigo-50"
+                                />
+
+                                <h2 className="font-bold text-lg text-slate-800">
+                                    {sessionStorage.getItem("uname")}
+                                </h2>
+
+                                <p className="text-sm text-slate-500">Student</p>
+                            </div>
+
+                            <nav className="p-4 flex flex-col gap-1">
+                                {menuItems.map((item) => (
+                                    <button
+                                        key={item.id}
+                                        onClick={() => {
+                                            setActiveTab(item.id);
+                                            setSidebarOpen(false);
+                                        }}
+                                        className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors text-left ${activeTab === item.id
+                                            ? "bg-indigo-600 text-white shadow-md shadow-indigo-200"
+                                            : "text-slate-600 hover:bg-slate-50"
+                                            }`}
+                                    >
+                                        {item.icon} {item.label}
+                                    </button>
+                                ))}
+
+                                <button onClick={handleLogout} className="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-rose-600 hover:bg-rose-50 transition-colors text-left mt-4">
+                                    <FaSignOutAlt /> Log Out
+                                </button>
+                            </nav>
+
+                        </div>
                     </div>
                 </aside>
+
+
 
                 {/* Mobile Overlay */}
                 {sidebarOpen && (
@@ -82,7 +194,7 @@ function UserProfile() {
 
                 {/* Content Area */}
                 <div className="flex-grow">
-                    
+
                     {/* PROFILE TAB */}
                     {activeTab === "profile" && (
                         <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 sm:p-8 animate-fade-in">
@@ -91,27 +203,27 @@ function UserProfile() {
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                     <div>
                                         <label className="block text-sm font-semibold text-slate-700 mb-2">First Name</label>
-                                        <input type="text" defaultValue="Karthik" className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 transition-all" />
+                                        <input type="text" defaultValue="Karthik" name='firstName' value={profileData.firstName} onChange={handleChange} className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 transition-all" />
                                     </div>
                                     <div>
                                         <label className="block text-sm font-semibold text-slate-700 mb-2">Last Name</label>
-                                        <input type="text" defaultValue="M" className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 transition-all" />
+                                        <input type="text" defaultValue="M" name='lastName' value={profileData.lastName} onChange={handleChange} className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 transition-all" />
                                     </div>
                                     <div>
                                         <label className="block text-sm font-semibold text-slate-700 mb-2">Email Address</label>
-                                        <input type="email" defaultValue="karthik@gmail.com" className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 transition-all" />
+                                        <input type="email" defaultValue="karthik@gmail.com" name='email' value={profileData.email} onChange={handleChange} className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 transition-all" />
                                     </div>
                                     <div>
                                         <label className="block text-sm font-semibold text-slate-700 mb-2">Phone Number</label>
-                                        <input type="tel" defaultValue="+91 9876543210" className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 transition-all" />
+                                        <input type="tel" defaultValue="+91 9876543210" name='phone' value={profileData.phone} onChange={handleChange} className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 transition-all" />
                                     </div>
                                     <div className="sm:col-span-2">
                                         <label className="block text-sm font-semibold text-slate-700 mb-2">Location / City</label>
-                                        <input type="text" defaultValue="Kasaragod, Kerala" className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 transition-all" />
+                                        <input type="text" defaultValue="Kasaragod, Kerala" name='location' value={profileData.location} onChange={handleChange} className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 transition-all" />
                                     </div>
                                 </div>
                                 <div className="pt-4 flex justify-end">
-                                    <button type="button" className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl font-medium shadow-md shadow-indigo-200 transition-all">
+                                    <button type="button" onClick={handleUpdate} className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl font-medium shadow-md shadow-indigo-200 transition-all">
                                         Save Changes
                                     </button>
                                 </div>
@@ -120,16 +232,16 @@ function UserProfile() {
                     )}
 
                     {/* FAVORITES TAB */}
-                    {activeTab === "favorites" && <Favorites/>}
+                    {activeTab === "favorites" && <Favorites />}
 
                     {/* BOOKINGS TAB */}
-                    {activeTab === "bookings" && <UserBooking/> }
+                    {activeTab === "bookings" && <UserBooking />}
 
                     {/* SETTINGS TAB */}
                     {activeTab === "settings" && (
                         <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 sm:p-8 animate-fade-in">
                             <h2 className="text-2xl font-bold text-slate-800 mb-6">Account Settings</h2>
-                            
+
                             <div className="space-y-6 max-w-2xl">
                                 <div className="border-b border-slate-100 pb-6">
                                     <h3 className="font-bold text-slate-800 mb-2">Notifications</h3>
@@ -162,9 +274,9 @@ function UserProfile() {
 
                 </div>
             </main>
-            
+
             <Footer />
-        </div>
+        </div >
     );
 }
 
