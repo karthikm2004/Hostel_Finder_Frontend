@@ -1,3 +1,3 @@
-const baseUrl="https://hostel-finder-backend-v957.onrender.com"
+const baseUrl="https://hostel-finder-backend-2.onrender.com"
 
 export default baseUrl
