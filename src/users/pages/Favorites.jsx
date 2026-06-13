@@ -87,7 +87,7 @@ function Favorites() {
                                             src={
                                                 item.hostelId?.uploadImg?.length > 0
 
-                                                    ? `http://localhost:3000/uploadImg/${item.hostelId.uploadImg[0]}`
+                                                    ? `https://hostel-finder-backend-2.onrender.com/uploadImg/${item.hostelId.uploadImg[0]}`
 
                                                     : "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&w=800&q=80"
                                             }

@@ -125,7 +125,7 @@ function HostelList() {
                                         <img
                                             src={
                                                 hostel.uploadImg?.length > 0
-                                                    ? `http://localhost:3000/uploadImg/${hostel.uploadImg[0]}`
+                                                    ? `https://hostel-finder-backend-2.onrender.com/uploadImg/${hostel.uploadImg[0]}`
                                                     : "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&w=800&q=80"
                                             }
                                             alt={hostel.propertyname}

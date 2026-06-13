@@ -66,7 +66,7 @@ function HostelDetails() {
   const images =
     hostel.uploadImg?.length > 0
       ? hostel.uploadImg.map(
-        (img) => `http://localhost:3000/uploadImg/${img}`
+        (img) => `https://hostel-finder-backend-2.onrender.com/uploadImg/${img}`
       )
       : [
         "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?q=100&w=1200&auto=format&fit=crop"
