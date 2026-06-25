@@ -28,6 +28,7 @@ function Auth({ signup }) {
           toast.success("Signup Successfull")
           setUser({ username: "", email: "", password: "" })
           navigate('/signin')
+          console.log(user)
         }
 
       }

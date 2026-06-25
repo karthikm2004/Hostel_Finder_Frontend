@@ -23,7 +23,7 @@ function Home() {
 
 
     const navigate = useNavigate()
-    
+
 
 
     // FETCH HOSTELS
@@ -39,8 +39,12 @@ function Home() {
             const response = await getLatestHostelApi();
 
             if (response.status === 200) {
-                console.log(response.data);
-                setLatestHostels(response.data);
+                if (Array.isArray(response.data)) {
+                    setLatestHostels(response.data);
+                } else {
+                    console.log("Latest hostel response is not an array", response.data);
+                    setLatestHostels([]);
+                }
             }
 
         } catch (err) {
